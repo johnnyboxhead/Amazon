@@ -1,5 +1,10 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var item_id
+var stock_quantity
+var currentItems
+var available
+var newQuantity
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -11,21 +16,20 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err){
     if (err) throw err;
-    connection.end()
 })
 
-// function pullItems(){
-//     connection.query("SELECT * FROM products", function(err, res){
-//         if (err) throw err;
-//         console.log(res);
-//         connection.end();
-//         questions();
-//     })
-    
-// }
+function pullItems(){
+    connection.query("SELECT * FROM products", function(err, res){
+        if (err) throw err;
+        currentItems = res
+        console.log(currentItems);
+        questions()
+        // connection.end();
+    })
+}
 
-// pullItems()
-questions()
+pullItems()
+// questions()
 
 function questions(){
     inquirer.prompt([
@@ -38,8 +42,43 @@ function questions(){
         type: "input",
         message: "How many do you want to purchase?",
         name: "stock_quantity"
-    }], function(answers){
-        console.log("test1");
-        console.log(answers.stock_quantity);
+    }]
+    ).then(function(inquirerResponse){
+        stock_quantity = inquirerResponse.stock_quantity
+        item_id = inquirerResponse.item_id
+        console.log("You want to purchase " + inquirerResponse.stock_quantity + " of item #" + inquirerResponse.item_id)
+        checkItem();
     })
+}
+
+function checkItem(){
+    for (i=0; i<currentItems.length; i++){
+        // console.log(currentItems[i].item_id)
+        // console.log(item_id)
+        if(currentItems[i].item_id == item_id){
+            console.log("test")
+            if(currentItems[i].stock_quantity >= stock_quantity){
+                newQuantity = currentItems[i].stock_quantity - stock_quantity
+                console.log("true")
+                available = true
+                updateStock()
+            }else{
+                console.log("false")
+                available = false
+                connection.end()
+            }
+        }
+    }
+}
+
+function updateStock(){
+    connection.query("UPDATE products SET ? WHERE ?", [
+        {
+        stock_quantity: newQuantity
+        },
+        {
+        item_id: item_id
+        }
+    ])
+    connection.end()   
 }
