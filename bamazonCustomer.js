@@ -5,6 +5,7 @@ var stock_quantity
 var currentItems
 var available
 var newQuantity
+var total
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -56,16 +57,15 @@ function checkItem(){
         // console.log(currentItems[i].item_id)
         // console.log(item_id)
         if(currentItems[i].item_id == item_id){
-            console.log("test")
             if(currentItems[i].stock_quantity >= stock_quantity){
-                newQuantity = currentItems[i].stock_quantity - stock_quantity
-                console.log("true")
-                available = true
-                updateStock()
+                newQuantity = currentItems[i].stock_quantity - stock_quantity;
+                available = true;
+                updateStock();
+                totalOrder();
             }else{
-                console.log("false")
-                available = false
-                connection.end()
+                console.log("Insufficient quantity to allow sale.");
+                available = false;
+                connection.end();
             }
         }
     }
@@ -81,4 +81,9 @@ function updateStock(){
         }
     ])
     connection.end()   
+}
+
+function totalOrder(){
+    total = stock_quantity * currentItems[item_id - 1].price
+    console.log("Your total is: $" + total)
 }
