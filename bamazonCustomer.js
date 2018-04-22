@@ -95,7 +95,7 @@ function updateStock(){
 
 function totalOrder(){
     for (i=0; i<currentItems.length; i++){
-        if (currentItems[i].item_id = item_id){
+        if (currentItems[i].item_id == item_id){
             var arrayIndex = i
         }
     }
