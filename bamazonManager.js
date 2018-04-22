@@ -5,6 +5,11 @@ var product_name;
 var department_name;
 var price;
 var stock_quantity;
+var items;
+var currentItems;
+var addInventoryItems = [];
+var addInventoryStock = [];
+var updatedStock_Quantity;
 
 
 var connection = mysql.createConnection({
@@ -42,15 +47,27 @@ inquirer.prompt([
     if (action === "Add to Inventory"){
         addInventory()
     }
-    
+    if (action === "Add New Product"){
+        addNewProduct()
+    }
 })
 
 
 function pullItems(){
     connection.query("SELECT * FROM products", function(err, res){
         if (err) throw err;
-        currentItems = res
-        console.log(currentItems);
+        currentItems = res;
+        for (i=0; i < currentItems.length; i++){
+            console.log("Item ID: " + currentItems[i].item_id);
+            console.log("Product Name: " + currentItems[i].product_name);
+            console.log("Department Name: " + currentItems[i].department_name);
+            console.log("Price: " + currentItems[i].price);
+            console.log("Stock Quantity " + currentItems[i].stock_quantity);
+            console.log("_______________")
+            console.log(" ")
+        }
+        
+        // console.log(currentItems);
         // questions()
         // connection.end();
     })
@@ -58,11 +75,68 @@ function pullItems(){
 
 function lowInventory(){
     connection.query("SELECT * FROM products WHERE stock_quantity < 5", function(err,res){
-        console.log(res)
+        currentItems = res;
+        console.log(" ")
+        for (i=0; i < currentItems.length; i++){
+            console.log("Item ID: " + currentItems[i].item_id);
+            console.log("Product Name: " + currentItems[i].product_name);
+            console.log("Department Name: " + currentItems[i].department_name);
+            console.log("Price: " + currentItems[i].price);
+            console.log("Stock Quantity " + currentItems[i].stock_quantity);
+            console.log("_______________")
+            console.log(" ")
+        }
     })
 }
 
 function addInventory(){
+    connection.query("SELECT * FROM products", function(err, res){
+        if (err) throw err;
+        currentItems = res;
+        updateInventory()
+    })
+}
+
+function updateInventory(){
+    for (i=0; i<currentItems.length; i++){
+        addInventoryItems.push(currentItems[i].product_name)
+        addInventoryStock.push(currentItems[i].stock_quantity)
+        console.log("test" + i)
+    }
+    console.log(addInventoryItems);
+    console.log(addInventoryStock);
+
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What product do you want to add stock_quantity to?",
+            name: "product_name",
+            choices: addInventoryItems
+        },
+        {
+            type: "input",
+            message: "How many items do you want to add?",
+            name: "stock_quantity"
+        }
+    ]).then(function(inquirerResponse){
+        var arrayIndex = addInventoryItems.indexOf(inquirerResponse.product_name);
+        updatedStock_Quantity = addInventoryStock[arrayIndex] + parseInt(inquirerResponse.stock_quantity);
+        connection.query("UPDATE products SET ? WHERE ?", [
+            {
+            stock_quantity: updatedStock_Quantity
+            },
+            {
+            product_name: inquirerResponse.product_name
+            }
+        ])
+        console.log("You've added " + inquirerResponse.stock_quantity + " items to the previous " + addInventoryStock[arrayIndex] + " " + inquirerResponse.product_name + " in stock, giving a new total of " + updatedStock_Quantity + " " + inquirerResponse.product_name + " in stock")
+        // console.log(inquirerResponse.stock_quantity)
+        // console.log(inquirerResponse.product_name)
+        connection.end();
+    })
+}
+
+function addNewProduct(){
     inquirer.prompt([
         {
             type: "input",
@@ -85,6 +159,7 @@ function addInventory(){
             name: "stock_quantity"
         }
     ]).then(function(inquirerResponse){
+        console.log("You've added a new product: ")
         product_name = inquirerResponse.product_name;
         console.log(product_name)
         department_name = inquirerResponse.department_name;
@@ -102,18 +177,3 @@ function addInventory(){
         connection.end();
     })
 }
-
-// VALUES(?, ?, ?, ?)", [
-//     {
-//         product_name: inquirerResponse.product_name
-//     },
-//     {
-//         department_name: inquirerResponse.department_name
-//     },
-//     {
-//         price: inquirerResponse.price
-//     },
-//     {
-//         stock_quantity: inquirerResponse.stock_quantity
-//     }
-// ])

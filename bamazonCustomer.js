@@ -23,7 +23,17 @@ function pullItems(){
     connection.query("SELECT * FROM products", function(err, res){
         if (err) throw err;
         currentItems = res
-        console.log(currentItems);
+        console.log(" ")
+        for (i=0; i < currentItems.length; i++){
+            console.log("Item ID: " + currentItems[i].item_id);
+            console.log("Product Name: " + currentItems[i].product_name);
+            console.log("Department Name: " + currentItems[i].department_name);
+            console.log("Price: " + currentItems[i].price);
+            console.log("Stock Quantity " + currentItems[i].stock_quantity);
+            console.log("_______________")
+            console.log(" ")
+        }
+        // console.log(currentItems);
         questions()
         // connection.end();
     })
@@ -36,7 +46,7 @@ function questions(){
     inquirer.prompt([
     {
         type: "input",
-        message: "What item_id do you want to purchase?",
+        message: "Which item_id do you want to purchase?",
         name: "item_id"
     },
     {
@@ -84,6 +94,11 @@ function updateStock(){
 }
 
 function totalOrder(){
-    total = stock_quantity * currentItems[item_id - 1].price
+    for (i=0; i<currentItems.length; i++){
+        if (currentItems[i].item_id = item_id){
+            var arrayIndex = i
+        }
+    }
+    total = stock_quantity * currentItems[arrayIndex].price
     console.log("Your total is: $" + total)
 }
